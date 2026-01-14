@@ -2,35 +2,38 @@ import { createServer, plugins } from 'restify'
 import { readdirSync } from 'fs'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
-import corsMiddleware from 'restify-cors-middleware'
 import { dbConnect } from './env/db.js'
 import { $rootPath } from './env/env.js'
 import { $getApiList } from './lib/api.js'
 import nunjucks from 'nunjucks'
 
-const server = createServer({ name: process.env.SERVER_NAME })
-const { preflight, actual } = corsMiddleware({
-  origins: [/.*/],
-  credentials: true,
-})
-
-server.pre(preflight)
-server.use(actual)
-server.use(plugins.queryParser())
-server.use(plugins.bodyParser())
-
 !(async () => {
+  const server = createServer({ name: process.env.SERVER_NAME })
+  server.use(plugins.acceptParser(server.acceptable))
+  server.use(plugins.queryParser())
+  server.use(plugins.bodyParser())
+
   await dbConnect()
 
   server.use(
     session({
       secret: process.env.SERVER_SECRET,
+      name: process.env.COOKIE_NAME,
       resave: false,
       saveUninitialized: false,
-      cookie: { httpOnly: false, domain: process.env.SERVER_DOMAIN },
+      proxy: true,
+      cookie: {
+        httpOnly: false,
+        domain: process.env.COOKIE_DOMAIN,
+        maxAge: 180 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax',
+        secure: false,
+      },
       store: MongoStore.create({
         mongoUrl: process.env.MONGODB_URL,
         dbName: process.env.MONGODB_DBNAME,
+        ttl: 180 * 24 * 60 * 60,
+        collection: 'sessions',
       }),
     })
   )

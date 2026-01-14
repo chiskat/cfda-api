@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { stringifySetCookie } from 'cookie'
 import { getDb } from '../env/db.js'
 import { POST } from '../lib/api.js'
 import { sha256 } from '../lib/hash.js'
@@ -19,6 +20,17 @@ export default class {
     if (result) {
       const staff = result
       req.session.staff = staff._id
+
+      // 非特定版本时，express-session 不起作用，此处自行实现 cookie 逻辑
+      const { _expires, originalMaxAge: _originalMaxAge, ...cookies } = req.session.cookie
+      const setCookie = stringifySetCookie({
+        name: process.env.COOKIE_NAME,
+        value: req.session.id,
+        expires: _expires,
+        maxAge: _originalMaxAge,
+        ...cookies,
+      })
+      res.setHeader('Set-Cookie', setCookie)
       res.send(staff)
 
       staffDB.findOneAndUpdate(

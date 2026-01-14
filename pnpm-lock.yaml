@@ -11,6 +11,9 @@ importers:
       connect-mongo:
         specifier: ^6.0.0
         version: 6.0.0(express-session@1.18.2)(mongodb@3.7.4)
+      cookie:
+        specifier: ^1.1.1
+        version: 1.1.1
       core-js:
         specifier: ^2.6.5
         version: 2.6.12
@@ -18,7 +21,7 @@ importers:
         specifier: ^11.0.0
         version: 11.0.0
       express-session:
-        specifier: ^1.16.1
+        specifier: ^1.18.2
         version: 1.18.2
       moment:
         specifier: ^2.24.0
@@ -35,9 +38,6 @@ importers:
       restify:
         specifier: ^11.1.0
         version: 11.1.0
-      restify-cors-middleware:
-        specifier: ^1.1.1
-        version: 1.1.1(restify@11.1.0)
     devDependencies:
       '@babel/cli':
         specifier: ^7.6.4
@@ -883,6 +883,10 @@ packages:
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.1.1:
+    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
 
   copy-descriptor@0.1.1:
     resolution: {integrity: sha512-XgZ0pFcakEUlbwQEVNg3+QAis1FyTL3Qel9FYy8pSkQqoG3PNoT0bOCQtOXcOkur21r2Eq2kI+IE+gsmAEVlYw==}
@@ -1844,11 +1848,6 @@ packages:
     resolution: {integrity: sha512-RfqAvLnMl313r7c9oclB1HhUEAezcpLjz95wFH4LVuhk9JF/r22qmVP9AMmOU4vMX7Q8pN8jwNg/CSpdFnMjTQ==}
     engines: {node: '>= 0.4'}
     hasBin: true
-
-  restify-cors-middleware@1.1.1:
-    resolution: {integrity: sha512-yh/TnX0/T8cejOFRK8iinwDSexPOJ6RmlM8gwj2/Fk8XlGew4ldi0Db0444KT6S6BqlD61709xbxEh0oKlbkOg==}
-    peerDependencies:
-      restify: 2.6.x - 7.x.x
 
   restify-errors@8.1.0:
     resolution: {integrity: sha512-9ZYZTL9qli2hYykL3newPLf8RLgpSz+4RpZ7KKVSAj4CgCA8PwlfATI4onV13IZ3ldzV3M/2bJom6GQEAwS9aQ==}
@@ -3318,6 +3317,8 @@ snapshots:
 
   cookie@0.7.2: {}
 
+  cookie@1.1.1: {}
+
   copy-descriptor@0.1.1: {}
 
   core-js-compat@3.47.0:
@@ -4233,11 +4234,6 @@ snapshots:
       is-core-module: 2.16.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
-
-  restify-cors-middleware@1.1.1(restify@11.1.0):
-    dependencies:
-      assert-plus: 1.0.0
-      restify: 11.1.0
 
   restify-errors@8.1.0:
     dependencies:
