@@ -8,6 +8,11 @@ trigger:
   branch:
     - master
 
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
 steps:
   - name: prepare
     image: chiskat/baseline-node20:2026.1.14
@@ -41,20 +46,6 @@ steps:
     commands:
       - docker tag chiskat/cfda-api:production chiskat/cfda-api:previous-prod
       - docker rmi chiskat/cfda-api:production
-
-  - name: deploy
-    image: appleboy/drone-ssh
-    settings:
-      host:
-        - from_secret: DEPLOY_SSH_HOST
-      username:
-        from_secret: DEPLOY_SSH_USER
-      key:
-        from_secret: DEPLOY_SSH_PRIKEY
-      command_timeout: 5m
-      script:
-        - cd /root/project-config/cfda-api
-        - docker compose up -d
 
   - name: deploy
     image: appleboy/drone-ssh
@@ -113,8 +104,3 @@ steps:
         - docker rmi chiskat/cfda-api:previous-prod || true
         - cd /root/project-config/cfda-api
         - docker compose up -d
-
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
