@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { stringifySetCookie } from 'cookie'
 import { getDb } from '../env/db.js'
-import { POST } from '../lib/api.js'
+import { GET, POST } from '../lib/api.js'
 import { sha256 } from '../lib/hash.js'
 
 const staffDB = getDb().collection('staff')
@@ -45,7 +45,7 @@ export default class {
     return next()
   }
 
-  @POST('/auth')
+  @GET('/auth')
   async auth(req, res, next) {
     const staffId = req.session.staff
     if (!staffId) {
