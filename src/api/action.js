@@ -69,4 +69,25 @@ export default class {
 
     return next()
   }
+
+  @POST('/logout')
+  async logout(req, res, next) {
+    const cookie = req.session.cookie
+    const sessionId = req.sessionId
+
+    req.session.destroy()
+
+    // 非特定版本时，express-session 不起作用，此处自行实现 cookie 逻辑
+    const { _expires, originalMaxAge: _originalMaxAge, ...cookies } = cookie
+    const setCookie = stringifySetCookie({
+      name: process.env.COOKIE_NAME,
+      value: sessionId,
+      maxAge: -1,
+      ...cookies,
+    })
+    res.setHeader('Set-Cookie', setCookie)
+    res.send()
+
+    return next()
+  }
 }
