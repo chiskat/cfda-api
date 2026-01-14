@@ -1,24 +1,21 @@
 {
-  "name": "shipinjuser",
-  "version": "1.0.0",
-  "main": "app.js",
+  "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development npx nodemon build/app.js",
-    "prod": "cross-env NODE_ENV=production npx nodemon build/app.js",
-    "cd": "babel src -d build --copy-files && cross-env NODE_ENV=production npx nodemon build/app.js",
-    "dev-build": "babel src -d build -w --copy-files",
-    "ci-build": "babel src -d build --copy-files"
+    "dev": "concurrently \"babel src -d build -w --copy-files\" \"dotenv -c development -- npx nodemon build/app.js\"",
+    "prod": "dotenv -c production -- npx nodemon build/app.js",
+    "build": "babel src -d build --copy-files",
+    "ci:prepare-docker": "npx -y docker-deps"
   },
-  "license": "MIT",
   "dependencies": {
-    "@babel/polyfill": "^7.4.4",
-    "@babel/runtime-corejs2": "^7.5.5",
+    "connect-mongo": "^6.0.0",
     "core-js": "^2.6.5",
+    "dotenv-cli": "^11.0.0",
     "express-session": "^1.16.1",
     "moment": "^2.24.0",
-    "mongodb": "^3.2.2",
+    "mongodb": "^3.7.4",
+    "nodemon": "1.19.1",
     "nunjucks": "^3.2.0",
-    "restify": "^8.2.0",
+    "restify": "^11.1.0",
     "restify-cors-middleware": "^1.1.1"
   },
   "devDependencies": {
@@ -26,11 +23,10 @@
     "@babel/core": "^7.5.5",
     "@babel/plugin-proposal-decorators": "^7.4.4",
     "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/polyfill": "7.4.4",
     "@babel/preset-env": "^7.5.5",
-    "babel-plugin-transform-decorators": "^6.24.1",
-    "cross-env": "^5.2.0",
-    "nodemon": "^1.19.1",
-    "npx": "^10.2.2"
+    "@babel/runtime-corejs2": "7.5.5",
+    "concurrently": "^9.2.1"
   },
   "babel": {
     "presets": [

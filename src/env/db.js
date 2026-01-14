@@ -1,15 +1,12 @@
 import { MongoClient } from 'mongodb'
-import { config } from './env.js'
-
-const { MONGODB_HOST, DB_NAME } = config
 
 let _dbClient = null
 let _db = null
 
 export const dbConnect = async () => {
-  _dbClient = new MongoClient(MONGODB_HOST, { useNewUrlParser: true, useUnifiedTopology: true })
+  _dbClient = new MongoClient(process.env.MONGODB_URL)
   await _dbClient.connect()
-  _db = _dbClient.db(DB_NAME)
+  _db = _dbClient.db(process.env.MONGODB_DBNAME)
 }
 
 export const getDb = () => _db

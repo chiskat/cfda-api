@@ -2,52 +2,119 @@ kind: pipeline
 name: default
 
 workspace:
-  path: /source
+  path: /cfda-api
+
+trigger:
+  branch:
+    - master
 
 steps:
+  - name: prepare
+    image: chiskat/baseline-node20:2026.1.14
+    commands:
+      - pnpm run ci:prepare-docker
+
   - name: build-image
     image: docker:dind
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
-      - name: yarncache
-        path: /usr/local/share/.cache/yarn
     commands:
-      - docker build --progress plain --compress -t paperplanecc/cfda-api:ci .
+      - docker build --progress plain --compress -t chiskat/cfda-api:${DRONE_COMMIT_SHA:0:8} .
 
-  - name: prepare-docker
+  - name: stop-old-container
     image: docker:dind
+    failure: ignore
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker stop cfda-api
+      - docker rm cfda-api
+
+  - name: rename-old-image
+    image: docker:dind
+    failure: ignore
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker tag chiskat/cfda-api:production chiskat/cfda-api:previous-prod
+      - docker rmi chiskat/cfda-api:production
+
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        - from_secret: DEPLOY_SSH_HOST
+      username:
+        from_secret: DEPLOY_SSH_USER
+      key:
+        from_secret: DEPLOY_SSH_PRIKEY
+      command_timeout: 5m
+      script:
+        - cd /root/project-config/cfda-api
+        - docker compose up -d
+
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        - from_secret: DEPLOY_SSH_HOST
+      username:
+        from_secret: DEPLOY_SSH_USER
+      key:
+        from_secret: DEPLOY_SSH_PRIKEY
+      command_timeout: 20m
+      script:
+        - docker tag chiskat/cfda-api:${DRONE_COMMIT_SHA:0:8} chiskat/cfda-api:production
+        - cd /root/project-config/cfda-api
+        - docker compose up -d
+
+  - name: clean
+    image: docker:dind
+    failure: ignore
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker rmi chiskat/cfda-api:previous-prod
+      - docker rmi chiskat/cfda-api:${DRONE_COMMIT_SHA:0:8}
+
+  - name: rollback-handle-docker
+    image: docker:dind
+    when:
+      status:
+        - failure
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
       - docker stop cfda-api || true
       - docker rm cfda-api || true
-      - docker image rm paperplanecc/cfda-api:latest || true
-      - docker tag paperplanecc/cfda-api:ci paperplanecc/cfda-api:latest || true
-      - docker image rm paperplanecc/cfda-api:ci || true
-  
-  - name: deploy
+      - docker rmi chiskat/cfda-api:production || true
+      - docker rmi chiskat/cfda-api:${DRONE_COMMIT_SHA:0:8} || true
+
+  - name: rollback-handle-ssh
     image: appleboy/drone-ssh
+    when:
+      status:
+        - failure
     settings:
       host:
-        - 'paperplane.cc'
-      username: root
+        - from_secret: DEPLOY_SSH_HOST
+      username:
+        from_secret: DEPLOY_SSH_USER
       key:
         from_secret: DEPLOY_SSH_PRIKEY
-      command_timeout: 5m
+      command_timeout: 20m
       script:
-        - cd /root/project-config/cfda
+        - docker tag chiskat/cfda-api:previous-prod chiskat/cfda-api:production || true
+        - docker rmi chiskat/cfda-api:previous-prod || true
+        - cd /root/project-config/cfda-api
         - docker compose up -d
 
 volumes:
   - name: dockersock
     host:
       path: /var/run/docker.sock
-  - name: yarncache
-    host:
-      path: /root/.yarncache
-
-trigger:
-  branch:
-    - master

@@ -1,18 +1,17 @@
 import { createServer, plugins } from 'restify'
 import { readdirSync } from 'fs'
 import session from 'express-session'
+import MongoStore from 'connect-mongo'
 import corsMiddleware from 'restify-cors-middleware'
-import { dbConnect, getDb } from './env/db.js'
-import { config, $rootPath } from './env/env.js'
+import { dbConnect } from './env/db.js'
+import { $rootPath } from './env/env.js'
 import { $getApiList } from './lib/api.js'
 import nunjucks from 'nunjucks'
 
-const { SERVER_NAME, SERVER_DOMAIN, SERVER_PORT, DEPLOY_HOST } = config
-
-const server = createServer({ name: SERVER_NAME })
+const server = createServer({ name: process.env.SERVER_NAME })
 const { preflight, actual } = corsMiddleware({
   origins: [/.*/],
-  credentials: true
+  credentials: true,
 })
 
 server.pre(preflight)
@@ -22,15 +21,17 @@ server.use(plugins.bodyParser())
 
 !(async () => {
   await dbConnect()
-  const db = getDb()
-  const { key } = await db.collection('config').findOne({})
 
   server.use(
     session({
-      secret: key,
+      secret: process.env.SERVER_SECRET,
       resave: false,
       saveUninitialized: false,
-      cookie: { httpOnly: false, domain: SERVER_DOMAIN }
+      cookie: { httpOnly: false, domain: process.env.SERVER_DOMAIN },
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URL,
+        dbName: process.env.MONGODB_DBNAME,
+      }),
     })
   )
 
@@ -55,12 +56,14 @@ server.use(plugins.bodyParser())
   })
 
   nunjucks.configure($rootPath`template`, { autoescape: true, noCache: true })
-  server.get('/', (req, res, next) => {
+  server.get('/', (_req, res, next) => {
     res.sendRaw(nunjucks.render(`home.njk`, { apiList: apiList }))
     return next()
   })
 
-  server.listen(SERVER_PORT, DEPLOY_HOST, () => {
-    console.log(`服务器[${server.name}]已经于[${DEPLOY_HOST}:${SERVER_PORT}]成功开启.`)
+  server.listen(process.env.SERVER_PORT, process.env.DEPLOY_HOST, () => {
+    console.log(
+      `服务器[${server.name}]已经于[${process.env.DEPLOY_HOST}:${process.env.SERVER_PORT}]成功开启.`
+    )
   })
 })()
