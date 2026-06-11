@@ -15,7 +15,7 @@ volumes:
 
 steps:
   - name: prepare
-    image: chiskat/baseline-node20:2026.1.14
+    image: chiskat/baseline-node24-alpine:2026.6.8
     commands:
       - pnpm run ci:prepare-docker
 
