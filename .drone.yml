@@ -17,7 +17,7 @@ steps:
   - name: prepare
     image: chiskat/baseline-node24-alpine:2026.6.8
     commands:
-      - pnpm run ci:prepare-docker
+      - npx -y docker-deps
 
   - name: build-image
     image: docker:dind
