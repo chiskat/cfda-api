@@ -1,5 +1,4 @@
-onlyBuiltDependencies:
-  - core-js
-  - dtrace-provider
-  - fsevents
-  - nodemon
+allowBuilds:
+  core-js: true
+  dtrace-provider: true
+  nodemon: true

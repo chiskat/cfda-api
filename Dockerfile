@@ -1,4 +1,4 @@
-FROM chiskat/baseline-node20:2026.1.14
+FROM chiskat/baseline-node24-alpine:2026.6.8
 
 ARG NPM_REGISTRY=https://registry.npmjs.org
 
